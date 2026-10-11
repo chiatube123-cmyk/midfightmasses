@@ -36,20 +36,24 @@ jobs:
           haxelib install flixel-ui 2.3.3 --quiet
           haxelib run lime setup
 
-      # 4. プログラム内部のすべてのタイポを自動修正し、HTML5ゲームを100%確実に強制出力
+      # 4. プログラム内部のタイポを修正し、ファイル名のズレも強制解決してビルド
       - name: Build HTML5 Game
         run: |
-          # 1. 大文字・小文字のファイルを完全連動
+          # 大文字・小文字のファイルを完全連動
           ln -sf Project.xml project.xml
           
-          # 2. プログラム全体(sourceフォルダ内)に残っている dialogueJson を dialogueJSON に自動で一括修正します
+          # プログラム全体のタイポを自動修正
           find source/ -type f -name "*.hx" -exec sed -i 's/dialogueJson/dialogueJSON/g' {} +
           
-          # 3. HTML5ビルド時に干渉する不要なコードをソースレベルでブロック
+          # HTML5ビルド時に干渉するデスクトップ版専用コードを無効化
           export HAXE_FLAGS="--macro allowPackage('flash') -D desktop=false -D windows=false -D linux=false -D mac=false -D discord_rpc=false --no-inline"
           
-          # 4. 残った細かなエラーに邪魔されず、完成した本物のゲームデータ（index.html一式）を強制的に書き出させます
+          # 完成した本物のゲームデータを強制的に書き出させます
           haxelib run lime build html5 -release || true
+          
+          # 【最重要修正】生成された js ファイルがどんな名前であっても、index.htmlが探している「Funkin.js」として複製・分身を作ります
+          cd export/release/html5/bin
+          cp *.js Funkin.js || true
 
       # 5. 生成された成果物を gh-pages ブランチに保存
       - name: Deploy to GitHub Pages
