@@ -13,11 +13,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. ソースコードのチェックアウト
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. Linux標準コマンドで環境を構築 ＋ フォント変換ツールをインストール
       - name: Setup Haxe, Neko and Font Tools
         run: |
           sudo apt-get update
@@ -25,7 +23,6 @@ jobs:
           mkdir -p $HOME/haxelib
           haxelib setup $HOME/haxelib
 
-      # 3. 2021年当時のゲームコードに適合するバージョンのライブラリ群をインストール
       - name: Install FNF Mod Libraries
         run: |
           haxelib install lime 7.9.0 --quiet
@@ -36,31 +33,24 @@ jobs:
           haxelib install flixel-ui 2.3.3 --quiet
           haxelib run lime setup
 
-      # 4. マニフェストバグ・音声バグ・フォント不具合・ファイル名大文字バグを完全修正
       - name: Build HTML5 Game
         run: |
-          # 大文字・小文字のファイルを完全連動
           ln -sf Project.xml project.xml
           
-          # プログラム全体のタイポを自動一括修正
-          find source/ -type f -name "*.hx" -exec sed -i 's/dialogueJson/dialogueJSON/g' {} +
+          # 【自動バグ修正】隠れている dialogueJson を dialogueJSON に一括変換
+          find . -type f -name "*.hx" -exec sed -i 's/dialogueJson/dialogueJSON/g' {} +
           
-          # 【軽量化修正】メモリ制限エラーを防ぐために、余計なデバッグ・インライン処理を徹底的に削除します
           export HAXE_FLAGS="--macro allowPackage('flash') -D desktop=false -D windows=false -D linux=false -D mac=false -D discord_rpc=false --no-inline -Dhtml5-prefix=./ -Dopenfl-assets-path=assets/ -D openfl-disable-audio-preloading --dce full"
-          
-          # HTML5ビルドを実行
           haxelib run lime build html5 -release || true
           
-          # 出力されたすべての manifest ファイル内のパス記号や改行不具合を自動修復
-          find export/release/html5/bin/ -type f -name "*.json" -exec sed -i 's/\\\\/\\//g' {} +
-          find export/release/html5/bin/ -type f -name "*.json" -exec sed -i 's/\\r//g' {} +
+          # 【記号エラーの修正】壊れていた箇所の文字とスラッシュを正しい形に直しました
+          find export/release/html5/bin/ -type f -name "*.json" -exec sed -i 's/\\\\/\//g' {} +
+          find export/release/html5/bin/ -type f -name "*.json" -exec sed -i 's/\r//g' {} +
           
-          # 【最重要修正】大文字の「Funkin.js」と小文字の「funkin.js」の両方の分身を同時に作成し、ブラウザの読み込みエラーを100%防止します
           cd export/release/html5/bin
           cp *.js Funkin.js || true
           cp *.js funkin.js || true
 
-      # 5. 生成された本物の成果物を gh-pages ブランチに保存
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
