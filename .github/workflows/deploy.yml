@@ -15,19 +15,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 🛠️ エラー原因だった箇所を実在する正規のツール（krdlab）に修正
       - name: Setup Haxe
         uses: krdlab/setup-haxe@v1
         with:
-          haxe-version: 4.1.5
+          haxe-version: 4.2.5  # より安定したバージョンに引き上げ
 
       - name: Install dependencies
         run: |
-          npm install -g lix
-          lix download
-          haxelib install lime
-          haxelib install openfl
-          haxelib install flixel
+          haxelib setup ~/haxelib
+          haxelib install lime 7.9.0 --always
+          haxelib install openfl 9.1.0 --always
+          haxelib install flixel 4.11.0 --always
+          haxelib install flixel-addons 2.11.0 --always
+          haxelib install flixel-ui 2.4.0 --always
+          haxelib install hscript --always
+          haxelib install newgrounds --always
+          haxelib run lime setup
           mkdir -p source
           echo 'package;' > source/APIStuff.hx
           echo 'class APIStuff { public static var API:String = ""; public static var EncKey:String = ""; }' >> source/APIStuff.hx
