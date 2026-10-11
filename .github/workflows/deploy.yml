@@ -17,9 +17,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. Haxe環境のセットアップ（Node 20以降の最新環境に対応した公式推奨アクション）
+      # 2. Haxe環境のセットアップ（公式の正しい名称とバージョン）
       - name: Setup Haxe
-        uses: HaxeFoundation/setup-haxe@v1.3.0
+        uses: haxe-actions/setup-haxe@v1
         with:
           haxe-version: 4.2.5
 
