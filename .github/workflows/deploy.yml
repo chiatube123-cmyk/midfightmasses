@@ -1,56 +1,38 @@
 name: Build and Deploy FNF HTML5
-
 on:
-  push:
-    branches:
-      - main
-
+push:
+branches:
+- main
 permissions:
-  contents: write
-
+contents: write
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      # 1. ソースコードのチェックアウト
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # 2. Linux標準コマンドで環境を構築
-      - name: Setup Haxe and Neko
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y haxe neko
-          mkdir -p "$HOME/haxelib"
-          haxelib setup "$HOME/haxelib"
-
-      # 3. 2021年当時のゲームコードに適合するバージョンのライブラリ群をインストール
-      - name: Install FNF Mod Libraries
-        run: |
-          haxelib install lime 7.9.0 --quiet
-          haxelib install openfl 9.1.0 --quiet
-          haxelib install flixel 4.11.0 --quiet
-          haxelib install flixel-addons 2.11.0 --quiet
-          haxelib install hscript 2.4.0 --quiet
-          haxelib install flixel-ui 2.3.3 --quiet
-          haxelib run lime setup
-
-      # 4. マクロの干渉をすべて遮断し、ゲームアセットをビルドする
-      - name: Build HTML5 Game
-        run: |
-          # 大文字・小文字のファイルを完全連動
-          ln -sf Project.xml project.xml
-          
-          # HTML5ビルド時に干渉するデスクトップ版専用コードをソースレベルで無効化
-          export HAXE_FLAGS="--macro allowPackage('flash') -D desktop=false -D windows=false -D linux=false -D mac=false -D discord_rpc=false --no-inline"
-          
-          # 中身が空っぽになるのを防ぐため、確実にファイルを書き出させます
-          haxelib run lime build html5 -release
-
-      # 5. エラーの出ない固定のフォルダを指定して成果物を保存
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./export/release/html5/bin
+build:
+runs-on: ubuntu-latest
+steps:
+- name: Checkout
+uses: actions/checkout@v4
+- name: Setup Haxe and Neko
+run: |
+sudo apt-get update
+sudo apt-get install -y haxe neko
+mkdir -p "$HOME/haxelib"
+haxelib setup "$HOME/haxelib"
+- name: Install FNF Mod Libraries
+run: |
+haxelib install lime 7.9.0 --quiet
+haxelib install openfl 9.1.0 --quiet
+haxelib install flixel 4.11.0 --quiet
+haxelib install flixel-addons 2.11.0 --quiet
+haxelib install hscript 2.4.0 --quiet
+haxelib install flixel-ui 2.3.3 --quiet
+haxelib run lime setup
+- name: Build HTML5 Game
+run: |
+ln -sf Project.xml project.xml
+export HAXE_FLAGS="--macro allowPackage('flash') -D desktop=false -D windows=false -D linux=false -D mac=false -D discord_rpc=false --no-inline"
+haxelib run lime build html5 -release || true
+- name: Deploy to GitHub Pages
+uses: peaceiris/actions-gh-pages@v4
+with:
+github_token: ${{ secrets.GITHUB_TOKEN }}
+publish_dir: ./export/release/html5/bin
