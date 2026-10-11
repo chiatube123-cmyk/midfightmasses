@@ -5,8 +5,8 @@ on:
     branches:
       - main
 
-permissions:
-  contents: write
+# GitHub Actionsに強力な書き込み権限を与える（最重要）
+permissions: write-all
 
 jobs:
   build:
@@ -51,5 +51,5 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
-          github_token: \${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./export/release/html5/bin
