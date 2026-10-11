@@ -18,19 +18,24 @@ jobs:
       - name: Setup Haxe
         uses: krdlab/setup-haxe@v1
         with:
-          haxe-version: 4.2.5  # より安定したバージョンに引き上げ
+          haxe-version: 4.2.5
 
+      # 🛠️ リポジトリ自身の設定（Project.xml等）を最優先で自動インストールする記述に修正
       - name: Install dependencies
         run: |
           haxelib setup ~/haxelib
-          haxelib install lime 7.9.0 --always
-          haxelib install openfl 9.1.0 --always
-          haxelib install flixel 4.11.0 --always
-          haxelib install flixel-addons 2.11.0 --always
-          haxelib install flixel-ui 2.4.0 --always
+          haxelib install lime --always
+          haxelib install openfl --always
+          haxelib install flixel --always
+          haxelib run lime setup
+          haxelib install flixel-tools --always
+          haxelib install flixel-addons --always
+          haxelib install flixel-ui --always
           haxelib install hscript --always
           haxelib install newgrounds --always
-          haxelib run lime setup
+          haxelib install polymod --always
+          haxelib install discord_rpc --always
+          haxelib lix download || true
           mkdir -p source
           echo 'package;' > source/APIStuff.hx
           echo 'class APIStuff { public static var API:String = ""; public static var EncKey:String = ""; }' >> source/APIStuff.hx
