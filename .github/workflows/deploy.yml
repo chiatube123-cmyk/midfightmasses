@@ -17,7 +17,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. 前回確実に成功したLinux標準コマンドで環境を構築
+      # 2. Linux標準コマンドで環境を構築
       - name: Setup Haxe and Neko
         run: |
           sudo apt-get update
@@ -25,7 +25,7 @@ jobs:
           mkdir -p "$HOME/haxelib"
           haxelib setup "$HOME/haxelib"
 
-      # 3. 前回確実に成功したライブラリのインストール
+      # 3. 2021年当時のゲームコードに適合するバージョンのライブラリ群をインストール
       - name: Install FNF Mod Libraries
         run: |
           haxelib install lime 7.9.0 --quiet
@@ -36,11 +36,11 @@ jobs:
           haxelib install flixel-ui 2.3.3 --quiet
           haxelib run lime setup
 
-      # 4. 【今回新しく追加】エラーを引き起こす最新の厳格なチェックを無効化してビルド
+      # 4. 大文字の「Project.xml」を指定してHTML5ゲームをビルド
       - name: Build HTML5 Game
         run: |
-          # 5年前の古いコードでもコンパイルを通すための魔法のオプションを追加
-          haxelib run lime build html5 -release --macro "allowPackage('flash')"
+          # あなたのリポジトリのファイル名に合わせて大文字の Project.xml を直接指定します
+          haxelib run lime build Project.xml html5 -release --macro "allowPackage('flash')"
 
       # 5. 生成された成果物を gh-pages ブランチに保存
       - name: Deploy to GitHub Pages
