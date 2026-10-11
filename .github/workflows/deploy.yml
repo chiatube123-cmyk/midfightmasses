@@ -36,17 +36,10 @@ jobs:
           haxelib install flixel-ui 2.3.3 --quiet
           haxelib run lime setup
 
-      # 4. 小文字の身代わりファイルを作ってからゲームを正常にビルド
+      # 4. 正確なパス（./project.xml）を指定してビルドを実行
       - name: Build HTML5 Game
         run: |
-          # 大文字の Project.xml を、システムが自動認識できる小文字の project.xml としてコピー作成します
+          # 小文字のファイルをルートに作成
           cp Project.xml project.xml
-          # コマンドの形を崩さずに標準の書き方でビルドを実行します
-          haxelib run lime build html5 -release --macro "allowPackage('flash')"
-
-      # 5. 生成された成果物を gh-pages ブランチに保存
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./export/release/html5/bin
+          # システムが迷子にならないよう、カレントディレクトリの project.xml を直接指定してビルドします
+          haxelib run lime build ./project.xml html5 -release --macro "allowPackage('flash')"
