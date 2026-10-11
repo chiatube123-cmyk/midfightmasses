@@ -36,15 +36,11 @@ jobs:
           haxelib install flixel-ui 2.3.3 --quiet
           haxelib run lime setup
 
-      # 4. あなたのリポジトリにある本物の「Project.xml」を直接指定してビルドを実行
+      # 4. エラー対策をファイルに埋め込み、限界までシンプルなコマンドでビルド
       - name: Build HTML5 Game
         run: |
-          # 2021年当時のLimeバージョン(7.9.0)で確実にファイル名を認識させる正しい引数の順序です
-          haxelib run lime build html5 Project.xml -release --macro "allowPackage('flash')"
-
-      # 5. 生成された成果物を gh-pages ブランチに保存
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./export/release/html5/bin
+          # 1. 引数エラーの原因になるマクロ設定を、Project.xmlの内部に直接書き加えます
+          sed -i '/<\/project>/i \t<haxedef name="allowPackage" value="flash" \/>' Project.xml
+          
+          # 2. 余計なオプションをすべて消し、当時の一番シンプルな標準コマンドで実行します
+          haxelib run lime build html5 -release
