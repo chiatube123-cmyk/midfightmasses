@@ -17,11 +17,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. Linux標準コマンドで環境を構築 ＋ 【重要】フォント変換ツールを強制インストール
+      # 2. Linux標準コマンドで環境を構築 ＋ 最新システム対応のフォント変換ツールをインストール
       - name: Setup Haxe, Neko and Font Tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y haxe neko fontforge ttf2woff
+          # 見つからなかった ttf2woff を廃止し、最新の woff-tools に修正しました
+          sudo apt-get install -y haxe neko fontforge woff-tools
           mkdir -p $HOME/haxelib
           haxelib setup $HOME/haxelib
 
