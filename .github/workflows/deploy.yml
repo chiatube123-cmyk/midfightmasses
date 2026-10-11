@@ -37,7 +37,8 @@ jobs:
         run: |
           ln -sf Project.xml project.xml
           export HAXE_FLAGS="--macro allowPackage('flash') -D desktop=false -D windows=false -D linux=false -D mac=false -D discord_rpc=false --no-inline"
-          haxelib run lime build html5 -release || true
+          # || true を削除し、エラーがあればその場所でしっかりとログを止めて報告させるようにします
+          haxelib run lime build html5 -release
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
