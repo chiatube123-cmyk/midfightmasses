@@ -1,45 +1,44 @@
-name: Deploy to GitHub Pages
+name: Build and Deploy FNF HTML5
 
 on:
   push:
     branches:
-      - main
+      - main  # トリガーとなるブランチ名。master の場合は master に変更してください
 
 permissions:
   contents: write
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
+
     steps:
+      # 1. ソースコードのチェックアウト
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 1. Haxe環境のセットアップ（Nodeから切り替え）
+      # 2. Haxe環境のセットアップ
       - name: Setup Haxe
         uses: krdlab/setup-haxe@v1
         with:
-          haxe-version: 4.1.5
+          haxe-version: 4.2.5  # FNF(Psych/Kade等)が安定して動く推奨バージョン。必要に応じて変更してください
 
-      # 2. 必要なライブラリのインストールとエラー回避のファイル作成
-      - name: Install dependencies
+      # 3. 必要なライブラリのインストールとセットアップ
+      - name: Install Haxe Libraries
         run: |
-          npm install -g lix
-          lix download
           haxelib install lime
           haxelib install openfl
           haxelib install flixel
-          mkdir -p source
-          echo 'package;' > source/APIStuff.hx
-          echo 'class APIStuff { public static var API:String = ""; public static var EncKey:String = ""; }' >> source/APIStuff.hx
+          haxelib run lime setup
+          # ※Modに特有のライブラリ（flixel-addons, polymod, hscript等）が必要な場合は、ここに「haxelib install ライブラリ名」を追加してください
 
-      # 3. FNFゲームのHTML5ビルド
-      - name: Build Game
-        run: haxelib run lime build html5 -release
+      # 4. HTML5（ブラウザ版）へのビルド
+      - name: Build HTML5
+        run: lime build html5 -release
 
-      # 4. gh-pages へのデプロイ（公開フォルダを指定）
-      - name: Deploy
+      # 5. 生成された成果物（export/release/html5/bin）を gh-pages ブランチにデプロイ
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./export/release/html5/bin
+          github_token: \${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./export/release/html5/bin  # Limeビルドで生成されるHTML5フォルダを指定
