@@ -17,11 +17,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. Linux標準コマンドで環境を構築 ＋ 最新システム対応のフォント変換ツールをインストール
+      # 2. Linux標準コマンドで環境を構築 ＋ フォント変換ツールをインストール
       - name: Setup Haxe, Neko and Font Tools
         run: |
           sudo apt-get update
-          # 見つからなかった ttf2woff を廃止し、最新の woff-tools に修正しました
           sudo apt-get install -y haxe neko fontforge woff-tools
           mkdir -p $HOME/haxelib
           haxelib setup $HOME/haxelib
@@ -37,7 +36,7 @@ jobs:
           haxelib install flixel-ui 2.3.3 --quiet
           haxelib run lime setup
 
-      # 4. フォント不具合を解決し、公開用アドレスのパスも強制適用してビルド
+      # 4. 音声バグとフォント不具合を解決し、公開用アドレスのパスも強制適用してビルド
       - name: Build HTML5 Game
         run: |
           # 大文字・小文字のファイルを完全連動
@@ -46,8 +45,8 @@ jobs:
           # プログラム全体のタイポを自動修正
           find source/ -type f -name "*.hx" -exec sed -i 's/dialogueJson/dialogueJSON/g' {} +
           
-          # アセットの読み込み先を絶対アドレスに強制固定します
-          export HAXE_FLAGS="--macro allowPackage('flash') -D desktop=false -D windows=false -D linux=false -D mac=false -D discord_rpc=false --no-inline -Dhtml5-prefix=./ -Dopenfl-assets-path=assets/"
+          # 【最重要修正】ブラウザでの音声読み込みクラッシュを防ぐマクロを追加し、アセットパスを強制固定します
+          export HAXE_FLAGS="--macro allowPackage('flash') -D desktop=false -D windows=false -D linux=false -D mac=false -D discord_rpc=false --no-inline -Dhtml5-prefix=./ -Dopenfl-assets-path=assets/ -D openfl-disable-audio-preloading"
           
           # 完成した本物のゲームデータを強制的に書き出させます
           haxelib run lime build html5 -release || true
