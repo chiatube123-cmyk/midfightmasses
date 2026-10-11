@@ -3,7 +3,7 @@ name: Build and Deploy FNF HTML5
 on:
   push:
     branches:
-      - main  # トリガーとなるブランチ名。master の場合は master に変更してください
+      - main
 
 permissions:
   contents: write
@@ -17,28 +17,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. Haxe環境のセットアップ
+      # 2. Haxe環境のセットアップ（より安定した公式・推奨アクションに変更）
       - name: Setup Haxe
-        uses: krdlab/setup-haxe@v1
+        uses: ashea-code/setup-haxe@v1
         with:
-          haxe-version: 4.2.5  # FNF(Psych/Kade等)が安定して動く推奨バージョン。必要に応じて変更してください
+          haxe-version: 4.2.5
 
       # 3. 必要なライブラリのインストールとセットアップ
       - name: Install Haxe Libraries
         run: |
-          haxelib install lime
-          haxelib install openfl
-          haxelib install flixel
+          haxelib install lime --quiet
+          haxelib install openfl --quiet
+          haxelib install flixel --quiet
+          # グローバルコマンドとして実行できるようにLimeをセットアップ
           haxelib run lime setup
-          # ※Modに特有のライブラリ（flixel-addons, polymod, hscript等）が必要な場合は、ここに「haxelib install ライブラリ名」を追加してください
 
       # 4. HTML5（ブラウザ版）へのビルド
       - name: Build HTML5
-        run: lime build html5 -release
+        run: haxelib run lime build html5 -release
 
-      # 5. 生成された成果物（export/release/html5/bin）を gh-pages ブランチにデプロイ
+      # 5. 生成された成果物を gh-pages ブランチにデプロイ
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: \${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./export/release/html5/bin  # Limeビルドで生成されるHTML5フォルダを指定
+          publish_dir: ./export/release/html5/bin
