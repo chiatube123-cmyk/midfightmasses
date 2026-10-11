@@ -17,11 +17,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. GitHub公式のアクションを使い、最も安全な方法でHaxe 4.2.5をインストール
-      - name: Setup Haxe
-        uses: haxe-actions/setup-haxe@v1.1.2
-        with:
-          haxe-version: 4.2.5
+      # 2. 誰かが作った外部ツールを完全に廃止し、Linux標準コマンドだけで環境を構築
+      - name: Setup Haxe and Neko
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y haxe neko
+          mkdir -p "$HOME/haxelib"
+          haxelib setup "$HOME/haxelib"
 
       # 3. 2021年当時のゲームコードに適合するバージョンのライブラリ群をインストール
       - name: Install FNF Mod Libraries
