@@ -36,11 +36,9 @@ jobs:
           haxelib install flixel-ui 2.3.3 --quiet
           haxelib run lime setup
 
-      # 4. エラー対策をファイルに埋め込み、限界までシンプルなコマンドでビルド
+      # 4. 引数エラーを起こさない環境変数（HAXE_FLAGS）を使って安全にビルド
       - name: Build HTML5 Game
         run: |
-          # 1. 引数エラーの原因になるマクロ設定を、Project.xmlの内部に直接書き加えます
-          sed -i '/<\/project>/i \t<haxedef name="allowPackage" value="flash" \/>' Project.xml
-          
-          # 2. 余計なオプションをすべて消し、当時の一番シンプルな標準コマンドで実行します
+          # コマンドの後ろに文字を付け足すと引数エラーになるため、環境変数を使って裏側からフラッシュを許可します
+          export HAXE_FLAGS="--macro allowPackage('flash')"
           haxelib run lime build html5 -release
