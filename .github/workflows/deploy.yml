@@ -17,7 +17,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. 外部ツールに頼らず、LinuxコマンドでHaxe 4.2.5を公式から直接ダウンロードして展開
+      # 2. LinuxコマンドでHaxe 4.2.5を公式から直接ダウンロードして展開
       - name: Install Haxe 4.2.5 Manually
         run: |
           wget https://github.com
