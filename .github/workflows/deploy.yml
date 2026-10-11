@@ -36,9 +36,21 @@ jobs:
           haxelib install flixel-ui 2.3.3 --quiet
           haxelib run lime setup
 
-      # 4. 引数エラーを起こさない環境変数（HAXE_FLAGS）を使って安全にビルド
+      # 4. 大文字・小文字どちらの呼び出しにも対応させてからビルドを実行
       - name: Build HTML5 Game
         run: |
-          # コマンドの後ろに文字を付け足すと引数エラーになるため、環境変数を使って裏側からフラッシュを許可します
+          # 1. 大文字の Project.xml を、小文字の project.xml としても完璧に認識させるための分身(リンク)を作ります
+          ln -sf Project.xml project.xml
+          
+          # 2. 環境変数を使って裏側からフラッシュの古いコードを許可します
           export HAXE_FLAGS="--macro allowPackage('flash')"
+          
+          # 3. 限界までシンプルなコマンドで安全にゲームを組み立てます
           haxelib run lime build html5 -release
+
+      # 5. 生成された成果物を gh-pages ブランチに保存
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./export/release/html5/bin
