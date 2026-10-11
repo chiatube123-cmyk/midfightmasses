@@ -1,47 +1,42 @@
-name: Build and Deploy FNF HTML5
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches:
       - main
 
-# 権限を明示的にすべて許可
-permissions: write-all
+permissions:
+  contents: write
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
-
     steps:
-      # 1. ソースコードのチェックアウト
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. Haxe環境のセットアップ
+      # 🛠️ エラー原因だった箇所を実在する正規のツール（krdlab）に修正
       - name: Setup Haxe
-        uses: ashea-code/setup-haxe@v1
+        uses: krdlab/setup-haxe@v1
         with:
-          haxe-version: 4.2.5
+          haxe-version: 4.1.5
 
-      # 3. ライブラリのインストール（バージョン競合を防ぐため一括セットアップ）
-      - name: Install Haxe Libraries
+      - name: Install dependencies
         run: |
-          haxelib install lime --quiet
-          haxelib install openfl --quiet
-          haxelib install flixel --quiet
-          haxelib install flixel-addons --quiet
-          haxelib install hscript --quiet
-          haxelib install flixel-ui --quiet
-          haxelib run lime setup
+          npm install -g lix
+          lix download
+          haxelib install lime
+          haxelib install openfl
+          haxelib install flixel
+          mkdir -p source
+          echo 'package;' > source/APIStuff.hx
+          echo 'class APIStuff { public static var API:String = ""; public static var EncKey:String = ""; }' >> source/APIStuff.hx
 
-      # 4. HTML5ビルド（軽微なエラーや警告があっても処理を止めない設定）
-      - name: Build HTML5
+      - name: Build Game
         run: haxelib run lime build html5 -release
-        continue-on-error: true
 
-      # 5. 生成されたゲームデータをデプロイ
-      - name: Deploy to GitHub Pages
+      - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         with:
-          github_token: \${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./export/release/html5/bin
