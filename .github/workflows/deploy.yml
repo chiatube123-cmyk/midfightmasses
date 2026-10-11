@@ -36,13 +36,16 @@ jobs:
           haxelib install flixel-ui 2.3.3 --quiet
           haxelib run lime setup
 
-      # 4. 作業フォルダをリポジトリ直下に固定し、身代わりを作ってから標準コマンドでビルド
+      # 4. ゲームフォルダを正確に指定し、身代わりを作ってからビルド
       - name: Build HTML5 Game
-        working-directory: ${{ github.workspace }}
         run: |
-          # 大文字の Project.xml を小文字の project.xml として複製
+          # 1. もしmidfightmassesフォルダの中にデータが入っている場合は、そこへ移動します
+          if [ -d "midfightmasses" ]; then cd midfightmasses; fi
+          
+          # 2. 大文字の Project.xml をシステム自動認識用の小文字の project.xml に複製
           cp Project.xml project.xml
-          # 引数エラーを起こさない、当時の一番シンプルな標準コマンドでビルドを実行
+          
+          # 3. 引数エラーを起こさない最もシンプルな標準コマンドでビルドを実行
           haxelib run lime build html5 -release --macro "allowPackage('flash')"
 
       # 5. 生成された成果物を gh-pages ブランチに保存
@@ -50,4 +53,4 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./export/release/html5/bin
+          publish_dir: ./**/export/release/html5/bin
