@@ -1,4 +1,4 @@
-name: Build and Deploy to gh-pages
+name: Deploy to GitHub Pages
 
 on:
   push:
@@ -9,16 +9,37 @@ permissions:
   contents: write
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v4
 
+      # 1. Haxe環境のセットアップ（Nodeから切り替え）
       - name: Setup Haxe
         uses: krdlab/setup-haxe@v1
         with:
           haxe-version: 4.1.5
 
-      # （ライブラリのインストール、APIStuff.hxの生成、HTML5ビルド、および gh-pages へのデプロイ手順が続きます）
+      # 2. 必要なライブラリのインストールとエラー回避のファイル作成
+      - name: Install dependencies
+        run: |
+          npm install -g lix
+          lix download
+          haxelib install lime
+          haxelib install openfl
+          haxelib install flixel
+          mkdir -p source
+          echo 'package;' > source/APIStuff.hx
+          echo 'class APIStuff { public static var API:String = ""; public static var EncKey:String = ""; }' >> source/APIStuff.hx
+
+      # 3. FNFゲームのHTML5ビルド
+      - name: Build Game
+        run: haxelib run lime build html5 -release
+
+      # 4. gh-pages へのデプロイ（公開フォルダを指定）
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./export/release/html5/bin
