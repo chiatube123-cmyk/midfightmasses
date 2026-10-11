@@ -1,38 +1,46 @@
 name: Build and Deploy FNF HTML5
+
 on:
-push:
-branches:
-- main
+  push:
+    branches:
+      - main
+
 permissions:
-contents: write
+  contents: write
+
 jobs:
-build:
-runs-on: ubuntu-latest
-steps:
-- name: Checkout
-uses: actions/checkout@v4
-- name: Setup Haxe and Neko
-run: |
-sudo apt-get update
-sudo apt-get install -y haxe neko
-mkdir -p "$HOME/haxelib"
-haxelib setup "$HOME/haxelib"
-- name: Install FNF Mod Libraries
-run: |
-haxelib install lime 7.9.0 --quiet
-haxelib install openfl 9.1.0 --quiet
-haxelib install flixel 4.11.0 --quiet
-haxelib install flixel-addons 2.11.0 --quiet
-haxelib install hscript 2.4.0 --quiet
-haxelib install flixel-ui 2.3.3 --quiet
-haxelib run lime setup
-- name: Build HTML5 Game
-run: |
-ln -sf Project.xml project.xml
-export HAXE_FLAGS="--macro allowPackage('flash') -D desktop=false -D windows=false -D linux=false -D mac=false -D discord_rpc=false --no-inline"
-haxelib run lime build html5 -release || true
-- name: Deploy to GitHub Pages
-uses: peaceiris/actions-gh-pages@v4
-with:
-github_token: ${{ secrets.GITHUB_TOKEN }}
-publish_dir: ./export/release/html5/bin
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Haxe and Neko
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y haxe neko
+          mkdir -p $HOME/haxelib
+          haxelib setup $HOME/haxelib
+
+      - name: Install FNF Mod Libraries
+        run: |
+          haxelib install lime 7.9.0 --quiet
+          haxelib install openfl 9.1.0 --quiet
+          haxelib install flixel 4.11.0 --quiet
+          haxelib install flixel-addons 2.11.0 --quiet
+          haxelib install hscript 2.4.0 --quiet
+          haxelib install flixel-ui 2.3.3 --quiet
+          haxelib run lime setup
+
+      - name: Build HTML5 Game
+        run: |
+          ln -sf Project.xml project.xml
+          export HAXE_FLAGS="--macro allowPackage('flash') -D desktop=false -D windows=false -D linux=false -D mac=false -D discord_rpc=false --no-inline"
+          haxelib run lime build html5 -release || true
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./export/release/html5/bin
