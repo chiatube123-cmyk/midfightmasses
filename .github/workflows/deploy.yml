@@ -17,14 +17,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. Haxe環境のセットアップ（公式の正しい名称とバージョン）
-      - name: Setup Haxe
-        uses: haxe-actions/setup-haxe@v1
-        with:
-          haxe-version: 4.2.5
+      # 2. Ubuntu標準のコマンドでHaxeとNeko環境を直接インストール
+      - name: Install Haxe Framework
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y haxe neko
+          mkdir -p "$HOME/haxelib"
+          haxelib setup "$HOME/haxelib"
 
       # 3. 2021年当時の安定バージョンを指定してゲームライブラリをインストール
-      - name: Install Haxe Libraries
+      - name: Install FNF Mod Libraries
         run: |
           haxelib install lime 7.9.0 --quiet
           haxelib install openfl 9.1.0 --quiet
@@ -35,7 +37,7 @@ jobs:
           haxelib run lime setup
 
       # 4. HTML5（ブラウザ版）へのビルドを実行
-      - name: Build HTML5
+      - name: Build HTML5 Game
         run: haxelib run lime build html5 -release
 
       # 5. 生成された完成ゲームデータを gh-pages ブランチに保存
