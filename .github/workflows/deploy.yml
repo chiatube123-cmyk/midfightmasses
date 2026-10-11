@@ -5,31 +5,26 @@ on:
     branches:
       - main
 
-# GitHub Actionsに強力な書き込み権限を与える（最重要）
-permissions: write-all
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. ソースコードのチェックアウト
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. LinuxコマンドでHaxe 4.2.5を公式から直接ダウンロードして展開
       - name: Install Haxe 4.2.5 Manually
         run: |
           wget https://github.com
           tar -xf haxe-4.2.5-linux64.tar.gz
           echo "$GITHUB_WORKSPACE/haxe-4.2.5" >> $GITHUB_PATH
           export PATH="$GITHUB_WORKSPACE/haxe-4.2.5:$PATH"
-          
-          # Haxelibの設定
           mkdir -p "$HOME/haxelib"
           ./haxe-4.2.5/haxelib setup "$HOME/haxelib"
 
-      # 3. 2021年当時のゲームコードに適合するバージョンのライブラリ群をインストール
       - name: Install FNF Mod Libraries
         run: |
           export PATH="$GITHUB_WORKSPACE/haxe-4.2.5:$PATH"
@@ -41,13 +36,11 @@ jobs:
           haxelib install flixel-ui 2.3.3 --quiet
           haxelib run lime setup
 
-      # 4. HTML5（ブラウザ版）へのコンパイルを実行
       - name: Build HTML5 Game
         run: |
           export PATH="$GITHUB_WORKSPACE/haxe-4.2.5:$PATH"
           haxelib run lime build html5 -release
 
-      # 5. 生成された成果物を gh-pages ブランチに保存
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
