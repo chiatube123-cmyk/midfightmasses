@@ -36,26 +36,31 @@ jobs:
           haxelib install flixel-ui 2.3.3 --quiet
           haxelib run lime setup
 
-      # 4. 音声バグとフォント不具合を解決し、公開用アドレスのパスも強制適用してビルド
+      # 4. マニフェストバグ・音声バグ・フォント不具合を完全修正してビルド
       - name: Build HTML5 Game
         run: |
           # 大文字・小文字のファイルを完全連動
           ln -sf Project.xml project.xml
           
-          # プログラム全体のタイポを自動修正
+          # プログラム全体のタイポを自動一括修正
           find source/ -type f -name "*.hx" -exec sed -i 's/dialogueJson/dialogueJSON/g' {} +
           
-          # 【最重要修正】ブラウザでの音声読み込みクラッシュを防ぐマクロを追加し、アセットパスを強制固定します
+          # Web専用フラグと音声プリロード無効化フラグを裏から強制適用
           export HAXE_FLAGS="--macro allowPackage('flash') -D desktop=false -D windows=false -D linux=false -D mac=false -D discord_rpc=false --no-inline -Dhtml5-prefix=./ -Dopenfl-assets-path=assets/ -D openfl-disable-audio-preloading"
           
-          # 完成した本物のゲームデータを強制的に書き出させます
+          # HTML5ビルドを実行
           haxelib run lime build html5 -release || true
           
-          # 生成された js ファイルがどんな名前であっても、index.htmlが探している「Funkin.js」として複製・分身を作ります
+          # 【最終解決：マニフェスト不整合の強制自動修復】
+          # 出力されたすべての manifest ファイル内にある、ブラウザをフリーズさせる不要なパス記号や改行の不具合をLinuxコマンドで強制削除・クリーンアップします
+          find export/release/html5/bin/ -type f -name "*.json" -exec sed -i 's/\\\\/\\//g' {} +
+          find export/release/html5/bin/ -type f -name "*.json" -exec sed -i 's/\\r//g' {} +
+          
+          # 生成された js ファイルを index.html が探しにくる「Funkin.js」として複製・分身を作成
           cd export/release/html5/bin
           cp *.js Funkin.js || true
 
-      # 5. 生成された成果物を gh-pages ブランチに保存
+      # 5. 生成された本物の成果物を gh-pages ブランチに保存
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
