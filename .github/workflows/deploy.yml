@@ -17,17 +17,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. 誰かが作った外部ツールを完全に廃止し、Linux標準コマンドだけで環境を構築
-      - name: Setup Haxe and Neko
+      # 2. LinuxコマンドでHaxe 4.2.5公式バイナリを直接安全にダウンロード
+      - name: Setup Haxe 4.2.5
         run: |
-          sudo apt-get update
-          sudo apt-get install -y haxe neko
+          wget https://github.com -q
+          tar -xzf haxe-4.2.5-linux64.tar.gz
+          echo "$GITHUB_WORKSPACE/haxe-4.2.5" >> $GITHUB_PATH
+          
+          # Haxelibのセットアップ
           mkdir -p "$HOME/haxelib"
-          haxelib setup "$HOME/haxelib"
+          ./haxe-4.2.5/haxelib setup "$HOME/haxelib"
 
-      # 3. 2021年当時のゲームコードに適合するバージョンのライブラリ群をインストール
+      # 3. 2021年当時の安定バージョンを指定してゲームライブラリをインストール
       - name: Install FNF Mod Libraries
         run: |
+          export PATH="$GITHUB_WORKSPACE/haxe-4.2.5:$PATH"
           haxelib install lime 7.9.0 --quiet
           haxelib install openfl 9.1.0 --quiet
           haxelib install flixel 4.11.0 --quiet
@@ -36,9 +40,11 @@ jobs:
           haxelib install flixel-ui 2.3.3 --quiet
           haxelib run lime setup
 
-      # 4. HTML5（ブラウザ版）へのコンパイルを実行
+      # 4. 当時のHaxeバージョンを使ってHTML5（ブラウザ版）へのビルドを実行
       - name: Build HTML5 Game
-        run: haxelib run lime build html5 -release
+        run: |
+          export PATH="$GITHUB_WORKSPACE/haxe-4.2.5:$PATH"
+          haxelib run lime build html5 -release
 
       # 5. 生成された成果物を gh-pages ブランチに保存
       - name: Deploy to GitHub Pages
