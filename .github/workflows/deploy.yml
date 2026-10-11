@@ -17,26 +17,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. Haxe環境のセットアップ（より安定した公式・推奨アクションに変更）
+      # 2. Haxe環境のセットアップ
       - name: Setup Haxe
         uses: ashea-code/setup-haxe@v1
         with:
           haxe-version: 4.2.5
 
-      # 3. 必要なライブラリのインストールとセットアップ
+      # 3. Project.xmlに基づくすべての必須ライブラリを網羅してインストール
       - name: Install Haxe Libraries
         run: |
           haxelib install lime --quiet
           haxelib install openfl --quiet
           haxelib install flixel --quiet
-          # グローバルコマンドとして実行できるようにLimeをセットアップ
+          haxelib install flixel-addons --quiet
+          haxelib install hscript --quiet
+          haxelib install flixel-ui --quiet
           haxelib run lime setup
 
-      # 4. HTML5（ブラウザ版）へのビルド
+      # 4. HTML5（ブラウザ版）へのビルドを実行
       - name: Build HTML5
         run: haxelib run lime build html5 -release
 
-      # 5. 生成された成果物を gh-pages ブランチにデプロイ
+      # 5. 生成された完成品を gh-pages ブランチにデプロイ
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
